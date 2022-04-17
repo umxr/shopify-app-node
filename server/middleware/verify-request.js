@@ -16,7 +16,11 @@ export default function verifyRequest(app, { returnHeader = true } = {}) {
       app.get("use-online-tokens")
     );
     const session = await getCurrentSessionById(sessionId);
-    const isActive = Shopify.Context.SCOPES.equals(session[0].scope);
+    const scopesUnchanged = Shopify.Context.SCOPES.equals(session[0].scope);
+    const isActive =
+      scopesUnchanged &&
+      session[0].accessToken &&
+      (!session[0].expires || session[0].expires >= new Date());
     let shop = req.query.shop;
 
     if (session[0] && shop && session[0].shop !== shop) {

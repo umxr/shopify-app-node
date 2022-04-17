@@ -1,4 +1,5 @@
 import { Shopify } from "@shopify/shopify-api";
+import { createShop } from "../db/shops/helpers.js";
 
 import topLevelAuthRedirect from "../helpers/top-level-auth-redirect.js";
 
@@ -46,12 +47,7 @@ export default function applyAuthMiddleware(app) {
       );
 
       const host = req.query.host;
-      app.set(
-        "active-shopify-shops",
-        Object.assign(app.get("active-shopify-shops"), {
-          [session.shop]: session.scope,
-        })
-      );
+      await createShop(session.shop, session.scope);
 
       const response = await Shopify.Webhooks.Registry.register({
         shop: session.shop,
