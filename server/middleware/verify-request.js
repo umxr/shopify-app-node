@@ -51,8 +51,8 @@ export default function verifyRequest(app, { returnHeader = true } = {}) {
 
     if (returnHeader) {
       if (!shop) {
-        if (session) {
-          shop = session.shop;
+        if (session[0]) {
+          shop = session[0].shop;
         } else if (Shopify.Context.IS_EMBEDDED_APP) {
           const authHeader = req.headers.authorization;
           const matches = authHeader?.match(/Bearer (.*)/);

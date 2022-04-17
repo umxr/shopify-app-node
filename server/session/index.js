@@ -52,6 +52,7 @@ class Store {
       if (currentSession.length === 0) {
         return undefined;
       }
+      currentSession[0].id = currentSession[0].session_id;
       return currentSession[0];
     } catch (error) {
       console.log("error", error);
