@@ -1,4 +1,5 @@
 import { Shopify } from "@shopify/shopify-api";
+import { getCurrentSessionById } from "../session/helpers.js";
 
 const TEST_GRAPHQL_QUERY = `
 {
@@ -9,25 +10,26 @@ const TEST_GRAPHQL_QUERY = `
 
 export default function verifyRequest(app, { returnHeader = true } = {}) {
   return async (req, res, next) => {
-    const session = await Shopify.Utils.loadCurrentSession(
+    const sessionId = Shopify.Auth.getCurrentSessionId(
       req,
       res,
       app.get("use-online-tokens")
     );
-
+    const session = await getCurrentSessionById(sessionId);
+    const isActive = Shopify.Context.SCOPES.equals(session[0].scope);
     let shop = req.query.shop;
 
-    if (session && shop && session.shop !== shop) {
+    if (session[0] && shop && session[0].shop !== shop) {
       // The current request is for a different shop. Redirect gracefully.
       return res.redirect(`/auth?shop=${shop}`);
     }
 
-    if (session?.isActive()) {
+    if (isActive) {
       try {
         // make a request to make sure oauth has succeeded, retry otherwise
         const client = new Shopify.Clients.Graphql(
-          session.shop,
-          session.accessToken
+          session[0].shop,
+          session[0].accessToken
         );
         await client.query({ data: TEST_GRAPHQL_QUERY });
         return next();
